@@ -229,7 +229,7 @@ with third_row[0]:
 with third_row[1]:
     show_image("8. Hysteresis simulee", steps["hysteresis"])
 with third_row[2]:
-    show_image("9. Canny OpenCV", steps["opencv_canny"])
+    show_image("9. resultat final ", steps["opencv_canny"])
 
 st.header("Simulation matricielle locale")
 st.write(
