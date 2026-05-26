@@ -52,16 +52,19 @@ if uploaded_file is not None:
 
     # Charger image
     image = Image.open(uploaded_file)
-    image_np = np.array(image)
-
     # Conversion RGB -> BGR pour OpenCV
+    image_np = np.array(image)
+    
     if len(image_np.shape) == 3:
         image_cv = cv2.cvtColor(image_np, cv2.COLOR_RGB2BGR)
     else:
         image_cv = image_np
-
-    # Niveaux de gris
-    gray = cv2.cvtColor(image_cv, cv2.COLOR_BGR2GRAY)
+    
+    # ✅ SAFE GRAYSCALE CONVERSION
+    if len(image_cv.shape) == 3:
+        gray = cv2.cvtColor(image_cv, cv2.COLOR_BGR2GRAY)
+    else:
+        gray = image_cv
 
     # Étape 1 : Flou gaussien
     blurred = cv2.GaussianBlur(gray, (blur_size, blur_size), 0)
