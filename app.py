@@ -119,4 +119,200 @@ if uploaded_file is not None:
         st.subheader("6. Résultat Final - Canny")
         st.image(canny, clamp=True, use_container_width=True)
 
+        # =====================================================
+    # SIMULATION MATRICIELLE
+    # =====================================================
+
+    st.header("🧮 Simulation Matricielle Pas à Pas")
+
+    st.write("""
+    Cette partie montre comment l’algorithme travaille
+    directement sur les matrices de pixels.
+    """)
+
+    # =====================================================
+    # CHOIX DYNAMIQUE D'UNE REGION
+    # =====================================================
+
+    st.subheader("📍 Sélection d'une région de l'image")
+
+    h, w = blurred.shape
+
+    x_pos = st.slider(
+        "Position X",
+        0,
+        w - 6,
+        0
+    )
+
+    y_pos = st.slider(
+        "Position Y",
+        0,
+        h - 6,
+        0
+    )
+
+    # Région 5x5
+    sample = blurred[y_pos:y_pos+5, x_pos:x_pos+5]
+
+    st.subheader("1️⃣ Matrice 5x5 extraite")
+
+    st.dataframe(sample)
+
+    # =====================================================
+    # FILTRE GAUSSIEN
+    # =====================================================
+
+    st.subheader("2️⃣ Filtre Gaussien Généré")
+
+    gaussian_kernel_1d = cv2.getGaussianKernel(blur_size, 0)
+
+    gaussian_kernel = gaussian_kernel_1d @ gaussian_kernel_1d.T
+
+    gaussian_kernel = gaussian_kernel / np.sum(gaussian_kernel)
+
+    st.write("Matrice du filtre gaussien :")
+
+    st.dataframe(
+        np.round(gaussian_kernel, 4)
+    )
+
+    # =====================================================
+    # SOBEL
+    # =====================================================
+
+    sobel_kernel_x = np.array([
+        [-1, 0, 1],
+        [-2, 0, 2],
+        [-1, 0, 1]
+    ])
+
+    sobel_kernel_y = np.array([
+        [-1, -2, -1],
+        [0, 0, 0],
+        [1, 2, 1]
+    ])
+
+    st.subheader("3️⃣ Masque Sobel X")
+
+    st.dataframe(sobel_kernel_x)
+
+    st.subheader("4️⃣ Masque Sobel Y")
+
+    st.dataframe(sobel_kernel_y)
+
+    # =====================================================
+    # REGION 3x3
+    # =====================================================
+
+    region = sample[1:4, 1:4]
+
+    st.subheader("5️⃣ Région 3x3 analysée")
+
+    st.dataframe(region)
+
+    # =====================================================
+    # CALCUL Gx
+    # =====================================================
+
+    calc_x = region * sobel_kernel_x
+
+    sum_x = np.sum(calc_x)
+
+    st.subheader("6️⃣ Calcul du Gradient Horizontal Gx")
+
+    st.write("Multiplication élément par élément :")
+
+    st.dataframe(calc_x)
+
+    st.write(f"Gx = {sum_x}")
+
+    # =====================================================
+    # CALCUL Gy
+    # =====================================================
+
+    calc_y = region * sobel_kernel_y
+
+    sum_y = np.sum(calc_y)
+
+    st.subheader("7️⃣ Calcul du Gradient Vertical Gy")
+
+    st.write("Multiplication élément par élément :")
+
+    st.dataframe(calc_y)
+
+    st.write(f"Gy = {sum_y}")
+
+    # =====================================================
+    # MAGNITUDE
+    # =====================================================
+
+    magnitude_manual = np.sqrt(sum_x**2 + sum_y**2)
+
+    st.subheader("8️⃣ Magnitude du Gradient")
+
+    st.latex(r"G = \sqrt{G_x^2 + G_y^2}")
+
+    st.write(
+        f"G = sqrt({sum_x}² + {sum_y}²)"
+    )
+
+    st.write(
+        f"Magnitude = {magnitude_manual:.2f}"
+    )
+
+    # =====================================================
+    # ANGLE
+    # =====================================================
+
+    angle_manual = np.arctan2(sum_y, sum_x) * 180 / np.pi
+
+    st.subheader("9️⃣ Direction du Gradient")
+
+    st.latex(r"\theta = tan^{-1}(G_y/G_x)")
+
+    st.write(
+        f"Angle = {angle_manual:.2f}°"
+    )
+
+    # =====================================================
+    # INTERPRETATION
+    # =====================================================
+
+    st.subheader("🔍 Interprétation")
+
+    if magnitude_manual > high_threshold:
+        st.success(
+            "Contour FORT détecté"
+        )
+
+    elif magnitude_manual > low_threshold:
+        st.warning(
+            "Contour FAIBLE détecté"
+        )
+
+    else:
+        st.error(
+            "Pas de contour détecté"
+        )
+
+    # =====================================================
+    # VISUALISATION ZONE
+    # =====================================================
+
+    st.subheader("🖼️ Zone sélectionnée dans l'image")
+
+    zoom = cv2.rectangle(
+        cv2.cvtColor(blurred.copy(), cv2.COLOR_GRAY2BGR),
+        (x_pos, y_pos),
+        (x_pos + 5, y_pos + 5),
+        (0, 255, 0),
+        2
+    )
+
+    st.image(
+        zoom,
+        use_container_width=True
+    )
+
     st.success("Simulation terminée ✅")
