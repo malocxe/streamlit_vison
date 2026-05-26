@@ -283,22 +283,17 @@ if uploaded_file is not None:
     # =====================================================
 
     st.subheader("🔍 Interprétation")
-
-    if magnitude_manual > high_threshold:
-        st.success(
-            "Contour FORT détecté"
-        )
-
-    elif magnitude_manual > low_threshold:
-        st.warning(
-            "Contour FAIBLE détecté"
-        )
-
+    
+    local_threshold = np.mean(magnitude) * 0.3  # seuil adaptatif
+    
+    if magnitude_manual > local_threshold * 2:
+        st.success("Contour FORT détecté")
+    
+    elif magnitude_manual > local_threshold:
+        st.warning("Contour FAIBLE détecté")
+    
     else:
-        st.error(
-            "Pas de contour détecté"
-        )
-
+        st.error("Pas de contour détecté")
     # =====================================================
     # VISUALISATION ZONE
     # =====================================================
